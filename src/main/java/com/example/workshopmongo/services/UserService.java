@@ -1,7 +1,6 @@
 package com.example.workshopmongo.services;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.example.workshopmongo.domain.User;
 import com.example.workshopmongo.dto.UserDTO;
 import com.example.workshopmongo.repository.UserRepository;
-import com.example.workshopmongo.services.exception.ObjectNotFoundException;
 
 @Service
 public class UserService {
@@ -22,8 +20,8 @@ public class UserService {
 	}
 
 	public User findById(String id) {
-		Optional<User> user = userRepository.findById(id);
-		return user.orElseThrow(() -> new ObjectNotFoundException("Objeto não encontrado"));
+		User user = userRepository.findById(id).get();
+		return user;
 	}
 
 	public User insert(User user) {
@@ -34,8 +32,22 @@ public class UserService {
 		findById(id);
 		userRepository.deleteById(id);
 	}
+	
+	public User update(User user) {
+		User newUser = userRepository.findById(user.getId()).get();
+		updateData(user, newUser);
+		
+		return userRepository.save(newUser);
+	}
 
 	public User fromDTO(UserDTO objDto) {
 		return new User(objDto.getId(), objDto.getName(), objDto.getEmail());
 	}
+	
+	private void updateData(User user, User newUser) {
+		newUser.setEmail(user.getEmail());
+		newUser.setId(user.getId());
+		newUser.setName(user.getName());
+	}
+	
 }
